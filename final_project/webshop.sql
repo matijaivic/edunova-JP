@@ -1,45 +1,59 @@
+# This is my database for e-commerce
 
-
-DROP database IF EXISTS order_store;
-CREATE database order_store CHARACTER SET utf8;
+DROP DATABASE IF EXISTS order_store;
+CREATE DATABASE order_store CHARACTER SET utf8;
 
 USE order_store;
 
-create table products (
-	product_id 			int not null primary key auto_increment, 
-	product_name 		varchar(100) not null, # naziv proizvoda
-	manufactorer		varchar(200) not null, # proizvođač
-	category_name		varchar(30) null, #kategorija proizvoda
-	description			varchar(3000) null
-	#product_image		image null
+CREATE TABLE products (
+	product_id 			INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	product_sku			INT NOT NULL,
+	product_name 		VARCHAR(100) NOT NULL, 
+	manufactorer		VARCHAR(75) NOT NULL, 
+	category_name		VARCHAR(30) NULL,
+	product_price		DECIMAL(18,2) NOT NULL,
+	quantity_in_stock	INT NOT NULL DEFAULT 0, CHECK (quantity_in_stock > 0),
+	description			TEXT NULL
+	#product_image		image NULL
 );
 
-create table sales (
-	sales_id		int not null primary key auto_increment,
-	total_price		decimal(18,2) not null,
-	sales_type 		boolean, # pravna (osoba) ili privatno prodaja
-	quantity 		int, CHECK (quantity > 0) # količina
-
-);
-
-CREATE TABLE users (
-	user_id 	 	int not null primary key auto_increment, 
-	user_name	 	varchar(100) not null, # ime kupca, ime firme..
-	user_type	 	varchar(25) not null, # može biti kupac, prodavatelj, dobavljač, zaposlenik..  
-	address		 	varchar(200) not null, # navodi se što je potrebno pod adresu
-	phone_number 	varchar(15),	
-	sales_fk		int not null,
-	
-	foreign key (sales_fk) references sales(sales_id)
+CREATE TABLE customers (
+	customer_id 	 	INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+	create_date 		DATETIME NOT null DEFAULT NOW(),
+	national_id_number	VARCHAR(30) NULL,  
+    first_name 			VARCHAR(50) NULL,
+    last_name 			VARCHAR(50) NULL,
+    address 			VARCHAR(50) NOT NULL,
+    city 				VARCHAR(30) NOT NULL,
+    country  			VARCHAR(30) NOT NULL DEFAULT 'CROATIA',
+    zip_code  			VARCHAR(30) NOT NULL,
+    phone 				INT NULL
 );
 
 create table orders ( 
-	order_id 			int not null primary key auto_increment,
-	order_date			datetime not null, # datum narudžbe
-	bought_quantity		int not null, CHECK (bought_quantity > 0), # cijena
-	product_fk 			int not null,
-	buyer_fk			int not null,
+	order_id 			INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	create_date 		DATETIME NOT null DEFAULT NOW(),
+	order_date			DATETIME NOT NULL, 
+	bought_quantity		INT NOT NULL, CHECK (bought_quantity > 0), 
+	total_price			DECIMAL(18,2) NOT NULL DEFAULT 0.0,
+	customer_fk 		INT NOT NULL,
 	
-	foreign key (buyer_fk) references users(user_id),
-	foreign key (product_fk) references products(product_id)
+	foreign key (customer_fk) references customers(customer_id)
 );
+
+CREATE TABLE customer_products (
+	sales_id		INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	create_date 	DATETIME NOT null DEFAULT NOW(),
+	sales_type 		BOOLEAN NOT NULL,
+	quantity 		SMALLINT NOT NULL DEFAULT 1,
+    discount 		REAL NULL DEFAULT 0,
+	price			DECIMAL(18,2) NOT NULL,
+	vat_rate		TINYINT(4) NULL,
+	product_fk		INT NOT NULL,
+	order_fk		INT NOT NULL,
+    	
+	foreign key (product_fk) references products(product_id),
+	foreign key (order_fk) references orders(order_id)
+);
+
+   
