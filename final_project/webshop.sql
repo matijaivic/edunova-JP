@@ -1,59 +1,80 @@
-# This is my database for e-commerce
+DROP DATABASE IF EXISTS store;
+CREATE DATABASE store;
 
-DROP DATABASE IF EXISTS order_store;
-CREATE DATABASE order_store CHARACTER SET utf8;
+USE store;
 
-USE order_store;
-
-CREATE TABLE products (
-	product_id 			INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	product_sku			INT NOT NULL,
-	product_name 		VARCHAR(100) NOT NULL, 
-	manufactorer		VARCHAR(75) NOT NULL, 
-	category_name		VARCHAR(30) NULL,
-	product_price		DECIMAL(18,2) NOT NULL,
-	quantity_in_stock	INT NOT NULL DEFAULT 0, CHECK (quantity_in_stock > 0),
-	description			TEXT NULL
-	#product_image		image NULL
+create table address (
+id INT not null primary key auto_increment,
+address1 VARCHAR(255) not null,
+address2 VARCHAR(255) not null,
+city VARCHAR(255) not null,
+provinces VARCHAR(255) null,
+state VARCHAR(255) not null default 'CROATIA',
+postal_code VARCHAR(255) not null
 );
 
-CREATE TABLE customers (
-	customer_id 	 	INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
-	create_date 		DATETIME NOT null DEFAULT NOW(),
-	national_id_number	VARCHAR(30) NULL,  
-    first_name 			VARCHAR(50) NULL,
-    last_name 			VARCHAR(50) NULL,
-    address 			VARCHAR(50) NOT NULL,
-    city 				VARCHAR(30) NOT NULL,
-    country  			VARCHAR(30) NOT NULL DEFAULT 'CROATIA',
-    zip_code  			VARCHAR(30) NOT NULL,
-    phone 				INT NULL
+create table customer (
+id INT not null primary key auto_increment,
+personal_id VARCHAR(255) null,
+first_name VARCHAR(255) not null,
+last_name VARCHAR(255) not null,
+phone INT null,
+credit_limit int not null,
+billing_adress_fk int not null,
+shipping_adress_fk int null,
+
+foreign key (billing_adress_fk) references address (id),
+foreign key (shipping_adress_fk) references address (id)
 );
 
-create table orders ( 
-	order_id 			INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	create_date 		DATETIME NOT null DEFAULT NOW(),
-	order_date			DATETIME NOT NULL, 
-	bought_quantity		INT NOT NULL, CHECK (bought_quantity > 0), 
-	total_price			DECIMAL(18,2) NOT NULL DEFAULT 0.0,
-	customer_fk 		INT NOT NULL,
-	
-	foreign key (customer_fk) references customers(customer_id)
+create table product ( 
+id INT not null primary key auto_increment,
+location_product VARCHAR(255) not null,
+name VARCHAR(255) not null,
+vendor varchar(255) null,
+description TEXT null,
+qty_in_stock INT not null default 0,
+check (qty_in_stock > 0),
+wholesale_price DECIMAL(18,2) not null,
+retail_price DECIMAL(18,2) null,
+msrp DECIMAL(18,2) null
 );
 
-CREATE TABLE customer_products (
-	sales_id		INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	create_date 	DATETIME NOT null DEFAULT NOW(),
-	sales_type 		BOOLEAN NOT NULL,
-	quantity 		SMALLINT NOT NULL DEFAULT 1,
-    discount 		REAL NULL DEFAULT 0,
-	price			DECIMAL(18,2) NOT NULL,
-	vat_rate		TINYINT(4) NULL,
-	product_fk		INT NOT NULL,
-	order_fk		INT NOT NULL,
-    	
-	foreign key (product_fk) references products(product_id),
-	foreign key (order_fk) references orders(order_id)
+create table invoice (
+id INT not null primary key auto_increment,
+due_date DATETIME not null default NOW(),
+required_date DATETIME null,
+shipped_date DATETIME not null,
+delivery DATETIME not null,
+vat_rate tinyint(4) null,
+discount_amount tinyint(4) not null,
+comments text null,
+customer_fk int not null,
+shipping_address_fk int null,
+
+foreign key (customer_fk) references customer (id),
+foreign key (shipping_address_fk) references address (id)
 );
 
-   
+create table orders_products (
+id INT not null primary key auto_increment,
+quantity int not null default 1,
+check (quantity > 0),
+price_each decimal(18,2) null,
+discount int null default 0,
+invoice_fk int not null,
+product_fk int not null,
+
+foreign key (invoice_fk) references invoice (id),
+foreign key (product_fk) references product (id)
+);
+
+create table payment ( 
+id INT not null primary key auto_increment,
+payment_date DATETIME not null default NOW(),
+total_price DECIMAL(18,2) not null default 0.0,
+invoice_fk int not null,
+
+foreign key (invoice_fk) references invoice (id)
+);
+
