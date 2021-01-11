@@ -12,7 +12,7 @@ public class Zadatak01 {
 		java.util.Scanner ulaz = new java.util.Scanner(System.in);
 		System.out.println("Unesi 24 broja: ");
 		
-		int niz[] = new int[5];
+		int niz[] = new int[24];
 		int zbroj = 0;
 		
 		for (int i = 0; i < niz.length; i++) {
